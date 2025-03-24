@@ -1,1 +1,0 @@
-const apiURL= 'your_api_url';
