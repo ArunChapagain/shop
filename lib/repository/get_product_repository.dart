@@ -6,7 +6,7 @@ class GetProductRepository {
 
   GetProductRepository(this.getProductService);
 
-  Future<List<ProductModel>> getProducts() async {
+  Future<ProductModel> getProducts() async {
     try {
       final response = await getProductService.getProducts();
       return response.data;

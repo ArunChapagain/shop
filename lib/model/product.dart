@@ -64,7 +64,7 @@ class Product extends Equatable {
 				discountPercentage: (data['discountPercentage'] as num?)?.toDouble(),
 				rating: (data['rating'] as num?)?.toDouble(),
 				stock: data['stock'] as int?,
-				tags: data['tags'] as List<String>?,
+				tags:  (data['tags'] as List<dynamic>?)?.map((e) => e.toString()).toList(),
 				brand: data['brand'] as String?,
 				sku: data['sku'] as String?,
 				weight: data['weight'] as int?,
@@ -82,7 +82,7 @@ class Product extends Equatable {
 				meta: data['meta'] == null
 						? null
 						: Meta.fromMap(data['meta'] as Map<String, dynamic>),
-				images: data['images'] as List<String>?,
+				images: (data['images'] as List<dynamic>?)?.map((e) => e.toString()).toList(),
 				thumbnail: data['thumbnail'] as String?,
 			);
 

@@ -20,7 +20,7 @@ class _GetProductService implements GetProductService {
   final ParseErrorLogger? errorLogger;
 
   @override
-  Future<HttpResponse<List<ProductModel>>> getProducts() async {
+  Future<HttpResponse<ProductModel>> getProducts() async {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{};
     final _headers = <String, dynamic>{};
@@ -35,16 +35,16 @@ class _GetProductService implements GetProductService {
           )
           .copyWith(baseUrl: _combineBaseUrls(_dio.options.baseUrl, baseUrl)),
     );
-    final _result = await _dio.fetch<List<ProductModel>>(_options);
-    late List<ProductModel> _value;
+    final _result = await _dio.fetch<Map<String, dynamic>>(_options);
+    late ProductModel _value;
     try {
-      _value = _result.data!;
+      _value = ProductModel.fromMap(_result.data!);
     } on Object catch (e, s) {
       errorLogger?.logError(e, s, _options);
       rethrow;
     }
-    final httpResponse=HttpResponse(_value, _result);
-    return httpResponse ;
+    final httpResponse = HttpResponse(_value, _result);
+    return httpResponse;
   }
 
   RequestOptions _setStreamType<T>(RequestOptions requestOptions) {
