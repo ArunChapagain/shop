@@ -1,6 +1,3 @@
-
-import 'dart:developer';
-
 import 'package:shop/core/constant/apis.dart';
 import 'package:dio/dio.dart';
 import 'package:retrofit/retrofit.dart';
