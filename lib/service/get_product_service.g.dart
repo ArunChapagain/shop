@@ -40,7 +40,6 @@ class _GetProductService implements GetProductService {
           .copyWith(baseUrl: _combineBaseUrls(_dio.options.baseUrl, baseUrl)),
     );
     final _result = await _dio.fetch<Map<String, dynamic>>(_options);
-    log('Response: ${_result.data}');
     late ProductListModel _value;
     try {
       _value = ProductListModel.fromMap(_result.data!);
