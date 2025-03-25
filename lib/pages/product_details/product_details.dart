@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:auto_route/auto_route.dart';
+import 'package:shop/core/router/app_router.dart';
 import 'package:shop/core/theme/app_theme.dart';
 import 'package:shop/model/cart_item.dart';
 import 'package:shop/model/product.dart';
-import 'package:shop/pages/product_cart/cart.dart';
 import 'package:shop/provider/cart_provider.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 
+@RoutePage()
 class ProductDetailsScreen extends StatefulWidget {
   final Product product;
 
@@ -62,7 +64,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
 
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios),
-          onPressed: () => Navigator.of(context).pop(),
+          onPressed: () => context.router.pop(),
         ),
         centerTitle: true,
         title: Text(
@@ -77,9 +79,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
           IconButton(
             icon: const Icon(Icons.shopping_cart),
             onPressed: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(builder: (context) => const CartScreen()),
-              );
+              context.router.push(const CartRoute());
             },
           ),
         ],

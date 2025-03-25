@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:auto_route/auto_route.dart';
 import 'package:shop/core/theme/app_theme.dart';
 import 'package:shop/provider/cart_provider.dart';
 
+@RoutePage()
 class CartScreen extends ConsumerWidget {
   const CartScreen({super.key});
 
@@ -10,7 +12,7 @@ class CartScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     // Watch the cart state
     final cartState = ref.watch(cartNotifierProvider);
-    
+
     // Access cart notifier for actions
     final cartNotifier = ref.read(cartNotifierProvider.notifier);
 
@@ -21,39 +23,45 @@ class CartScreen extends ConsumerWidget {
         actions: [
           IconButton(
             icon: const Icon(Icons.delete_sweep),
-            onPressed: cartState.items.isNotEmpty 
-              ? () => cartNotifier.clearCart() 
-              : null,
+            onPressed:
+                cartState.items.isNotEmpty
+                    ? () => cartNotifier.clearCart()
+                    : null,
           ),
         ],
       ),
-      body: cartState.isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : cartState.error != null
+      body:
+          cartState.isLoading
+              ? const Center(child: CircularProgressIndicator())
+              : cartState.error != null
               ? Center(child: Text('Error: ${cartState.error}'))
               : cartState.items.isEmpty
-                  ? const Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Icons.shopping_cart_outlined, 
-                              size: 100, color: Colors.grey),
-                          SizedBox(height: 16),
-                          Text(
-                            'Your cart is empty',
-                            style: TextStyle(
-                              fontSize: 18,
-                              color: Colors.grey,
-                            ),
-                          ),
-                        ],
-                      ),
-                    )
-                  : _buildCartList(context, ref, cartState),
+              ? const Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.shopping_cart_outlined,
+                      size: 100,
+                      color: Colors.grey,
+                    ),
+                    SizedBox(height: 16),
+                    Text(
+                      'Your cart is empty',
+                      style: TextStyle(fontSize: 18, color: Colors.grey),
+                    ),
+                  ],
+                ),
+              )
+              : _buildCartList(context, ref, cartState),
     );
   }
 
-  Widget _buildCartList(BuildContext context, WidgetRef ref, CartState cartState) {
+  Widget _buildCartList(
+    BuildContext context,
+    WidgetRef ref,
+    CartState cartState,
+  ) {
     final cartNotifier = ref.read(cartNotifierProvider.notifier);
 
     return Column(
@@ -71,10 +79,7 @@ class CartScreen extends ConsumerWidget {
                   color: Colors.red,
                   alignment: Alignment.centerRight,
                   padding: const EdgeInsets.only(right: 20),
-                  child: const Icon(
-                    Icons.delete, 
-                    color: Colors.white,
-                  ),
+                  child: const Icon(Icons.delete, color: Colors.white),
                 ),
                 direction: DismissDirection.endToStart,
                 onDismissed: (_) {
@@ -88,8 +93,9 @@ class CartScreen extends ConsumerWidget {
                       width: 60,
                       height: 60,
                       fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) => 
-                        const Icon(Icons.image_not_supported),
+                      errorBuilder:
+                          (context, error, stackTrace) =>
+                              const Icon(Icons.image_not_supported),
                     ),
                   ),
                   title: Text(
@@ -105,10 +111,13 @@ class CartScreen extends ConsumerWidget {
                     children: [
                       IconButton(
                         icon: const Icon(Icons.remove_circle_outline),
-                        onPressed: item.quantity > 1 
-                          ? () => cartNotifier.updateQuantity(
-                              item.productId, item.quantity - 1) 
-                          : null,
+                        onPressed:
+                            item.quantity > 1
+                                ? () => cartNotifier.updateQuantity(
+                                  item.productId,
+                                  item.quantity - 1,
+                                )
+                                : null,
                       ),
                       Text(
                         '${item.quantity}',
@@ -119,8 +128,11 @@ class CartScreen extends ConsumerWidget {
                       ),
                       IconButton(
                         icon: const Icon(Icons.add_circle_outline),
-                        onPressed: () => cartNotifier.updateQuantity(
-                            item.productId, item.quantity + 1),
+                        onPressed:
+                            () => cartNotifier.updateQuantity(
+                              item.productId,
+                              item.quantity + 1,
+                            ),
                       ),
                     ],
                   ),
@@ -160,10 +172,7 @@ class CartScreen extends ConsumerWidget {
             children: [
               const Text(
                 'Total',
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Colors.grey,
-                ),
+                style: TextStyle(fontSize: 16, color: Colors.grey),
               ),
               Text(
                 '\$${totalPrice.toStringAsFixed(2)}',
@@ -175,17 +184,18 @@ class CartScreen extends ConsumerWidget {
             ],
           ),
           ElevatedButton(
-            onPressed: cartState.items.isNotEmpty 
-              ? () {
-                  // TODO: Implement checkout process
-                  ScaffoldMessenger.of(ref.context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Checkout process initiated'),
-                      duration: Duration(seconds: 2),
-                    ),
-                  );
-                }
-              : null,
+            onPressed:
+                cartState.items.isNotEmpty
+                    ? () {
+                      // TODO: Implement checkout process
+                      ScaffoldMessenger.of(ref.context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Checkout process initiated'),
+                          duration: Duration(seconds: 2),
+                        ),
+                      );
+                    }
+                    : null,
             style: ElevatedButton.styleFrom(
               backgroundColor: AppTheme.primaryColor,
               minimumSize: const Size(150, 50),
@@ -195,10 +205,7 @@ class CartScreen extends ConsumerWidget {
             ),
             child: Text(
               'Checkout (${cartNotifier.totalItemCount} items)',
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-              ),
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
           ),
         ],

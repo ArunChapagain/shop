@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:auto_route/auto_route.dart';
+import 'package:shop/core/router/app_router.dart';
 import 'package:shop/core/theme/app_theme.dart';
 import 'package:shop/model/cart_item.dart';
 import 'package:shop/model/product.dart';
-import 'package:shop/pages/product_cart/cart.dart';
-import 'package:shop/pages/product_details/product_details.dart';
 import 'package:shop/pages/product_list/widget/product_card.dart';
 import 'package:shop/provider/cart_provider.dart';
 import 'package:shop/provider/product_provider.dart';
 
+@RoutePage()
 class ProductListScreen extends ConsumerWidget {
   const ProductListScreen({super.key});
 
@@ -38,9 +39,7 @@ class ProductListScreen extends ConsumerWidget {
           IconButton(
             icon: const Icon(Icons.shopping_cart),
             onPressed: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(builder: (context) => const CartScreen()),
-              );
+              context.router.push(const CartRoute());
             },
           ),
         ],
@@ -89,13 +88,8 @@ class ProductListScreen extends ConsumerWidget {
                     final product = productState.products[index];
                     return GestureDetector(
                       onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder:
-                                (context) =>
-                                    ProductDetailsScreen(product: product),
-                          ),
+                        context.router.push(
+                          ProductDetailsRoute(product: product),
                         );
                       },
                       child: ProductCard(
