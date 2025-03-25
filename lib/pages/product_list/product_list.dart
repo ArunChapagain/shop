@@ -10,10 +10,42 @@ import 'package:shop/provider/cart_provider.dart';
 import 'package:shop/provider/product_provider.dart';
 
 @RoutePage()
-class ProductListScreen extends ConsumerWidget {
+class ProductListScreen extends ConsumerStatefulWidget {
   const ProductListScreen({super.key});
 
-  void addToCart(WidgetRef ref, Product product) {
+  @override
+  ConsumerState<ProductListScreen> createState() => _ProductListScreenState();
+}
+
+class _ProductListScreenState extends ConsumerState<ProductListScreen> {
+  final ScrollController _scrollController = ScrollController();
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(_onScroll);
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    final maxScroll = _scrollController.position.maxScrollExtent;
+    final currentScroll = _scrollController.position.pixels;
+    final productState = ref.read(productNotifierProvider);
+
+    // When user scrolls to ~80% of the list, load more products
+    if (currentScroll >= maxScroll * 0.8 &&
+        !productState.isLoading &&
+        !productState.hasReachedMax) {
+      ref.read(productNotifierProvider.notifier).loadProducts();
+    }
+  }
+
+  void addToCart(Product product) {
     final cartItem = CartItemModel(
       productId: product.id!,
       title: product.title!,
@@ -26,7 +58,7 @@ class ProductListScreen extends ConsumerWidget {
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final productState = ref.watch(productNotifierProvider);
 
     return Scaffold(
@@ -51,63 +83,86 @@ class ProductListScreen extends ConsumerWidget {
                 onRefresh: () async {
                   ref.read(productNotifierProvider.notifier).refresh();
                 },
-                child: GridView.builder(
-                  padding: const EdgeInsets.all(5),
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2,
-                    childAspectRatio: 0.65,
-                    crossAxisSpacing: 8,
-                    mainAxisSpacing: 8,
-                  ),
-                  itemCount: productState.products.length + 1,
-                  itemBuilder: (context, index) {
-                    // If we're at the end of the list - handle pagination
-                    if (index == productState.products.length) {
-                      if (productState.isLoading) {
-                        return const Center(child: CircularProgressIndicator());
-                      } else if (productState.hasReachedMax) {
-                        return const Center(
-                          child: Padding(
-                            padding: EdgeInsets.symmetric(vertical: 16.0),
-                            child: Text('No more products'),
-                          ),
-                        );
-                      }
-                      // Request more items
-                      else {
-                        Future.microtask(() {
-                          ref
-                              .read(productNotifierProvider.notifier)
-                              .loadProducts();
-                        });
-                        return const Center(child: CircularProgressIndicator());
-                      }
-                    }
-
-                    // Display product card
-                    final product = productState.products[index];
-                    return GestureDetector(
-                      onTap: () {
-                        context.router.push(
-                          ProductDetailsRoute(product: product),
-                        );
-                      },
-                      child: ProductCard(
-                        product: product,
-                        onAddToCart: () {
-                          addToCart(ref, product);
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text('${product.title} added to cart'),
-                              duration: const Duration(seconds: 1),
-                              backgroundColor: AppTheme.primaryColor,
+                child:
+                    productState.products.isEmpty && productState.isLoading
+                        // Show centered loader for initial loading
+                        ? const Center(child: CircularProgressIndicator())
+                        : CustomScrollView(
+                          controller: _scrollController,
+                          slivers: [
+                            // Grid of products
+                            SliverPadding(
+                              padding: const EdgeInsets.all(5),
+                              sliver: SliverGrid(
+                                gridDelegate:
+                                    const SliverGridDelegateWithFixedCrossAxisCount(
+                                      crossAxisCount: 2,
+                                      childAspectRatio: 0.65,
+                                      crossAxisSpacing: 8,
+                                      mainAxisSpacing: 8,
+                                    ),
+                                delegate: SliverChildBuilderDelegate((
+                                  context,
+                                  index,
+                                ) {
+                                  // Display product card
+                                  final product = productState.products[index];
+                                  return GestureDetector(
+                                    onTap: () {
+                                      context.router.push(
+                                        ProductDetailsRoute(product: product),
+                                      );
+                                    },
+                                    child: ProductCard(
+                                      product: product,
+                                      onAddToCart: () {
+                                        addToCart(product);
+                                        ScaffoldMessenger.of(
+                                          context,
+                                        ).showSnackBar(
+                                          SnackBar(
+                                            content: Text(
+                                              '${product.title} added to cart',
+                                            ),
+                                            duration: const Duration(
+                                              seconds: 1,
+                                            ),
+                                            backgroundColor:
+                                                AppTheme.primaryColor,
+                                          ),
+                                        );
+                                      },
+                                    ),
+                                  );
+                                }, childCount: productState.products.length),
+                              ),
                             ),
-                          );
-                        },
-                      ),
-                    );
-                  },
-                ),
+
+                            // Loading indicator or end of list message
+                            SliverToBoxAdapter(
+                              child:
+                                  productState.hasReachedMax
+                                      ? Container(
+                                        padding: const EdgeInsets.symmetric(
+                                          vertical: 16,
+                                        ),
+                                        alignment: Alignment.center,
+                                        child: const Text('No more products'),
+                                      )
+                                      : productState.isLoading &&
+                                          productState.products.isNotEmpty
+                                      ? Container(
+                                        padding: const EdgeInsets.symmetric(
+                                          vertical: 16,
+                                        ),
+                                        alignment: Alignment.center,
+                                        child:
+                                            const CircularProgressIndicator(),
+                                      )
+                                      : const SizedBox.shrink(),
+                            ),
+                          ],
+                        ),
               ),
     );
   }
