@@ -78,9 +78,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
             icon: const Icon(Icons.shopping_cart),
             onPressed: () {
               Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (context) => const CartScreen(),
-                ),
+                MaterialPageRoute(builder: (context) => const CartScreen()),
               );
             },
           ),
@@ -307,17 +305,18 @@ class _AddToCartButton extends ConsumerWidget {
 
   const _AddToCartButton({required this.product, required this.quantity});
 
-  void addToCart(WidgetRef ref, Product product) {
-  final cartItem = CartItemModel(
-    productId: product.id!,
-    title: product.title!,
-    price: product.price!,
-    brand: product.brand!,
-    thumbnail: product.thumbnail!,
-  );
+  void addToCart(WidgetRef ref, Product product, int quantity) {
+    final cartItem = CartItemModel(
+      productId: product.id!,
+      title: product.title!,
+      price: product.price!,
+      brand: product.brand!,
+      quantity: quantity,
+      thumbnail: product.thumbnail!,
+    );
 
-  ref.read(cartNotifierProvider.notifier).addToCart(cartItem);
-}
+    ref.read(cartNotifierProvider.notifier).addToCart(cartItem);
+  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -325,7 +324,7 @@ class _AddToCartButton extends ConsumerWidget {
       padding: const EdgeInsets.all(16.0),
       child: ElevatedButton(
         onPressed: () {
-          addToCart(ref, product);
+          addToCart(ref, product, quantity);
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text('Added $quantity ${product.title} to cart'),
