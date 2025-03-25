@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shop/core/theme/app_theme.dart';
+import 'package:shop/model/cart_item.dart';
 import 'package:shop/model/product.dart';
+import 'package:shop/pages/product_cart/cart.dart';
+import 'package:shop/provider/cart_provider.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 
 class ProductDetailsScreen extends StatefulWidget {
@@ -9,6 +13,7 @@ class ProductDetailsScreen extends StatefulWidget {
   const ProductDetailsScreen({super.key, required this.product});
 
   @override
+  // ignore: library_private_types_in_public_api
   _ProductDetailsScreenState createState() => _ProductDetailsScreenState();
 }
 
@@ -72,7 +77,11 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
           IconButton(
             icon: const Icon(Icons.shopping_cart),
             onPressed: () {
-              // TODO: Implement cart navigation
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => const CartScreen(),
+                ),
+              );
             },
           ),
         ],
@@ -292,19 +301,31 @@ class _QuantitySelector extends StatelessWidget {
   }
 }
 
-class _AddToCartButton extends StatelessWidget {
+class _AddToCartButton extends ConsumerWidget {
   final Product product;
   final int quantity;
 
   const _AddToCartButton({required this.product, required this.quantity});
 
+  void addToCart(WidgetRef ref, Product product) {
+  final cartItem = CartItemModel(
+    productId: product.id!,
+    title: product.title!,
+    price: product.price!,
+    brand: product.brand!,
+    thumbnail: product.thumbnail!,
+  );
+
+  ref.read(cartNotifierProvider.notifier).addToCart(cartItem);
+}
+
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: ElevatedButton(
         onPressed: () {
-          // TODO: Implement add to cart functionality with Riverpod
+          addToCart(ref, product);
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text('Added $quantity ${product.title} to cart'),

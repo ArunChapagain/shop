@@ -72,7 +72,7 @@ class ProductCard extends StatelessWidget {
                     child: IconButton(
                       icon: const Icon(Icons.shopping_cart, size: 20),
                       onPressed: () {
-                        // TODO: Implement add_to_cart functionality
+                        onAddToCart();
                       },
                       padding: EdgeInsets.zero,
                     ),
