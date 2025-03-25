@@ -21,7 +21,10 @@ class _GetProductService implements GetProductService {
 
   @override
   @override
-  Future<HttpResponse<ProductModel>> getProducts({int skip=0, int limit=20}) async {
+  Future<HttpResponse<ProductListModel>> getProducts({
+    int skip = 0,
+    int limit = 20,
+  }) async {
     final queryParameters = <String, dynamic>{'skip': skip, 'limit': limit};
     final _extra = <String, dynamic>{};
     final _headers = <String, dynamic>{};
@@ -37,9 +40,10 @@ class _GetProductService implements GetProductService {
           .copyWith(baseUrl: _combineBaseUrls(_dio.options.baseUrl, baseUrl)),
     );
     final _result = await _dio.fetch<Map<String, dynamic>>(_options);
-    late ProductModel _value;
+    log('Response: ${_result.data}');
+    late ProductListModel _value;
     try {
-      _value = ProductModel.fromMap(_result.data!);
+      _value = ProductListModel.fromMap(_result.data!);
     } on Object catch (e, s) {
       errorLogger?.logError(e, s, _options);
       rethrow;

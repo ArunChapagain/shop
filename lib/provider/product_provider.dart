@@ -46,31 +46,32 @@ class ProductState {
 
 class ProductNotifier extends StateNotifier<ProductState> {
   final GetProductRepository repository;
-  
+
   ProductNotifier({required this.repository}) : super(ProductState()) {
     loadProducts();
   }
 
   Future<void> loadProducts() async {
     if (state.isLoading || state.hasReachedMax) return;
-    
+
     try {
       state = state.copyWith(isLoading: true);
-      
-      final productModel = await repository.getProducts(
+
+      final productList = await repository.getProducts(
         skip: state.currentSkip,
         limit: state.limit,
       );
-      
-      final newProducts = productModel.products ?? [];
-      final totalProducts = productModel.total ?? 0;
-      
+
+      final newProducts = productList.products ?? [];
+      final totalProducts = productList.total ?? 0;
+
       state = state.copyWith(
         products: [...state.products, ...newProducts],
         isLoading: false,
         hasError: false,
         currentSkip: state.currentSkip + state.limit,
-        hasReachedMax: state.products.length + newProducts.length >= totalProducts,
+        hasReachedMax:
+            state.products.length + newProducts.length >= totalProducts,
       );
     } catch (e) {
       state = state.copyWith(
@@ -93,7 +94,8 @@ final getProductRepositoryProvider = Provider<GetProductRepository>((ref) {
 });
 
 // StateNotifierProvider for pagination
-final productNotifierProvider = StateNotifierProvider<ProductNotifier, ProductState>((ref) {
-  final repository = ref.watch(getProductRepositoryProvider);
-  return ProductNotifier(repository: repository);
-});
+final productNotifierProvider =
+    StateNotifierProvider<ProductNotifier, ProductState>((ref) {
+      final repository = ref.watch(getProductRepositoryProvider);
+      return ProductNotifier(repository: repository);
+    });
