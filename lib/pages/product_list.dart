@@ -7,21 +7,65 @@ class ProductListScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final productsAsync = ref.watch(productsProvider);
+    final productState = ref.watch(productNotifierProvider);
     
     return Scaffold(
-      appBar: AppBar(title: const Text('Products')),
-      body: productsAsync.when(
-        data: (products) => ListView.builder(
-          itemCount: products.products?.length ?? 0,
-          itemBuilder: (context, index) => ListTile(
-            title: Text(products.products?[index].price?.toString() ?? 'No name'),
-            subtitle: Text('\$${products.products?[index].price}'),
+      appBar: AppBar(
+        title: const Text('Products'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            onPressed: () => ref.read(productNotifierProvider.notifier).refresh(),
           ),
-        ),
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, stack) => Center(child: Text('Error: $error')),
+        ],
       ),
+      body: productState.hasError
+          ? Center(child: Text('Error: ${productState.errorMessage}'))
+          : RefreshIndicator(
+              onRefresh: () async {
+                ref.read(productNotifierProvider.notifier).refresh();
+              },
+              child: ListView.builder(
+                itemCount: productState.products.length + 1,
+                itemBuilder: (context, index) {
+                  // If we're at the end of the list
+                  if (index == productState.products.length) {
+                    // Check if we're loading more items
+                    if (productState.isLoading) {
+                      return const Center(child: CircularProgressIndicator());
+                    } 
+                    // Check if we've reached the maximum
+                    else if (productState.hasReachedMax) {
+                      return const Center(child: Text('No more products'));
+                    } 
+                    // Request more items
+                    else {
+                      Future.microtask(() {
+                        ref.read(productNotifierProvider.notifier).loadProducts();
+                      });
+                      return const Center(child: CircularProgressIndicator());
+                    }
+                  }
+                  
+                  // Display product item
+                  final product = productState.products[index];
+                  return ListTile(
+                    title: Text(product.title ?? 'No title'),
+                    subtitle: Text('\$${product.price}'),
+                    leading: product.thumbnail != null
+                        ? Image.network(
+                            product.thumbnail!,
+                            width: 50,
+                            height: 50,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) =>
+                                const Icon(Icons.image_not_supported),
+                          )
+                        : const Icon(Icons.image_not_supported),
+                  );
+                },
+              ),
+            ),
     );
   }
 }

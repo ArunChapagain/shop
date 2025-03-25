@@ -6,9 +6,9 @@ class GetProductRepository {
 
   GetProductRepository(this.getProductService);
 
-  Future<ProductModel> getProducts() async {
+  Future<ProductModel> getProducts({int skip = 0, int limit = 20}) async {
     try {
-      final response = await getProductService.getProducts();
+      final response = await getProductService.getProducts(skip: skip, limit: limit);
       return response.data;
     } catch (e) {
       throw Exception(e);
